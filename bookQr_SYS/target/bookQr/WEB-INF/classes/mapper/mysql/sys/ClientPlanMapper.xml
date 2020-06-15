@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yxtech.sys.dao.ClientPlanMapper">
+  <resultMap id="BaseResultMap" type="com.yxtech.sys.domain.ClientPlan">
+    <!--
+      WARNING - @mbggenerated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="num" jdbcType="INTEGER" property="num" />
+    <result column="client_Id" jdbcType="INTEGER" property="clientId" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="publish_Time" jdbcType="DATE" property="publishTime" />
+    <result column="status" jdbcType="INTEGER" property="status" />
+  </resultMap>
+</mapper>

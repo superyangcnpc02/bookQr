@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yxtech.sys.dao.LBookResourceMapper" >
+  <resultMap id="BaseResultMap" type="com.yxtech.sys.domain.LBookResource" >
+    <!--
+      WARNING - @mbggenerated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="book_id" property="bookId" jdbcType="INTEGER" />
+    <result column="qr_type" property="qrType" jdbcType="INTEGER" />
+    <result column="res_id" property="resId" jdbcType="INTEGER" />
+    <result column="error_type" property="errorType" jdbcType="INTEGER" />
+    <result column="error_num" property="errorNum" jdbcType="INTEGER" />
+    <result column="error_code" property="errorCode" jdbcType="INTEGER" />
+    <result column="error_message" property="errorMessage" jdbcType="VARCHAR" />
+    <result column="status" property="status" jdbcType="INTEGER" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+  <resultMap id="BookResourceMap" type="com.yxtech.sys.dto.BookResourceDto" >
+    <id column="book_id" property="bookId" jdbcType="INTEGER" />
+    <result column="qr_type" property="qrType" jdbcType="INTEGER" />
+    <result column="res_id" property="resId" jdbcType="INTEGER" />
+  </resultMap>
+
+  <select id="queryAllBookResource" resultMap="BookResourceMap">
+    SELECT
+        tb.id book_id,
+        tq.qr_Type qr_type,
+        tr.id res_id
+    FROM
+        t_book tb
+    INNER JOIN t_qr tq ON tb.id = tq.book_Id
+    INNER JOIN t_resources tr ON tq.id = tr.qr_Id
+    <if test="bookId != null  and bookId != 0">
+      where tb.id=#{bookId}
+    </if>
+
+  </select>
+</mapper>

@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:context="http://www.springframework.org/schema/context" xmlns:p="http://www.springframework.org/schema/p"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+	    http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+	    http://www.springframework.org/schema/aop
+	    http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+	    http://www.springframework.org/schema/tx
+	    http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+	    http://www.springframework.org/schema/context
+	    http://www.springframework.org/schema/context/spring-context-4.0.xsd
+	    http://www.springframework.org/schema/util
+	    http://www.springframework.org/schema/util/spring-util-4.0.xsd
+	    ">
+    <context:annotation-config />
+    <!-- 读取配置文件 -->
+    <bean id="configProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+        <property name="locations">
+            <list>
+                <value>classpath*:/config/*.properties</value>
+            </list>
+        </property>
+    </bean>
+    <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PreferencesPlaceholderConfigurer">
+        <property name="properties" ref="configProperties"/>
+    </bean>
+
+    <bean class="com.yxtech.common.Constant">
+        <property name="baseQrHttp" value="${qr.preview}" />
+        <property name="courseQrHttp" value="${course.preview}" />
+        <property name="guaQrHttp" value="${gua.preview}" />
+        <property name="authHttp" value="${auth.preview}" />
+        <property name="newsQrHttp" value="${news.preview}" />
+        <property name="weixinAppid" value="${weixin.appId}" />
+        <property name="weixinSecret" value="${weixin.appSecret}" />
+        <property name="emailExamineQrHttp" value="${email.examine}" />
+        <property name="emailReportHttp" value="${email.report}" />
+    </bean>
+
+
+
+
+    <context:component-scan base-package="com.yxtech">
+        <context:exclude-filter type="annotation"
+                                expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+
+    <!-- 数据源配置, 使用 BoneCP 数据库连接池 -->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+          init-method="init" destroy-method="close">
+        <!-- 数据源驱动类可不写，Druid默认会自动根据URL识别DriverClass -->
+        <property name="driverClassName" value="${jdbc.driverClassName}"/>
+
+        <!-- 基本属性 url、user、password -->
+        <property name="url" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+
+        <!-- 配置初始化大小、最小、最大 -->
+        <property name="initialSize" value="3"/>
+        <property name="minIdle" value="3"/>
+        <property name="maxActive" value="20"/>
+
+        <!-- 配置获取连接等待超时的时间 -->
+        <property name="maxWait" value="60000"/>
+
+        <!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
+        <property name="timeBetweenEvictionRunsMillis" value="60000"/>
+
+        <!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+        <property name="minEvictableIdleTimeMillis" value="300000"/>
+
+        <property name="validationQuery" value="${jdbc.validationQuery}"/>
+        <property name="testWhileIdle" value="true"/>
+        <property name="testOnBorrow" value="false"/>
+        <property name="testOnReturn" value="false"/>
+
+        <!-- 配置监控统计拦截的filters -->
+        <property name="filters" value="stat"/>
+    </bean>
+
+
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="configLocation" value="classpath:config/mybatis/sqlMapConfig.xml"></property>
+        <property name="mapperLocations" value="classpath:mapper/mysql/**/*Mapper.xml"></property>
+        <!--分页插件-->
+        <property name="plugins">
+            <array>
+                <bean class="com.github.pagehelper.PageHelper">
+                    <property name="properties">
+                        <value>
+                            dialect=mysql
+                            reasonable=true
+                            offsetAsPageNum=true
+                            rowBoundsWithCount=true
+                        </value>
+                    </property>
+                </bean>
+            </array>
+        </property>
+    </bean>
+
+    <bean class="tk.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="annotationClass" value="org.springframework.stereotype.Repository"/>
+        <property name="basePackage" value="com.yxtech.**.dao"/>
+        <property name="properties">
+            <value>
+                mappers=tk.mybatis.mapper.common.Mapper
+            </value>
+        </property>
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+    </bean>
+
+    <!-- 配置SQLSession模板 -->
+    <bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate" scope="prototype">
+        <constructor-arg index="0" ref="sqlSessionFactory"/>
+    </bean>
+
+    <!-- 使用JDBC事物 -->
+    <bean id="transactionManager"
+          class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <!-- AOP配置事物 -->
+    <tx:advice id="transactionAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <tx:method name="query*" read-only="true" propagation="REQUIRED"/>
+            <tx:method name="delete*" propagation="REQUIRED"/>
+            <tx:method name="update*" propagation="REQUIRED"/>
+            <tx:method name="insert*" propagation="REQUIRED"/>
+            <tx:method name="*" propagation="REQUIRED"/>
+        </tx:attributes>
+    </tx:advice>
+
+    <!-- 配置AOP切面 -->
+    <aop:config>
+        <aop:pointcut id="transactionPointcut" expression="execution(* com.yxtech..service.*.*(..))"/>
+        <aop:advisor pointcut-ref="transactionPointcut" advice-ref="transactionAdvice"/>
+    </aop:config>
+
+    <!-- 使用annotation注解方式配置事务 -->
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+    <!-- AOP 代理-->
+    <aop:aspectj-autoproxy/>
+
+    <bean id="threadPoolTaskExecutor"
+          class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+        <!-- 核心线程数，默认为1 -->
+        <property name="corePoolSize" value="10"/>
+
+        <!-- 最大线程数，默认为Integer.MAX_VALUE -->
+        <property name="maxPoolSize" value="100"/>
+
+        <!-- 队列最大长度，一般需要设置值>=notifyScheduledMainExecutor.maxNum；默认为Integer.MAX_VALUE -->
+        <property name="queueCapacity" value="1000"/>
+
+        <!-- 线程池维护线程所允许的空闲时间，默认为60s -->
+        <property name="keepAliveSeconds" value="300"/>
+
+        <!-- 线程池对拒绝任务（无线程可用）的处理策略，目前只支持AbortPolicy、CallerRunsPolicy；默认为后者 -->
+        <property name="rejectedExecutionHandler">
+            <!-- AbortPolicy:直接抛出java.util.concurrent.RejectedExecutionException异常 -->
+            <!-- CallerRunsPolicy:主线程直接执行该任务，执行完之后尝试添加下一个任务到线程池中，可以有效降低向线程池内添加任务的速度 -->
+            <!-- DiscardOldestPolicy:抛弃旧的任务、暂不支持；会导致被丢弃的任务无法再次被执行 -->
+            <!-- DiscardPolicy:抛弃当前任务、暂不支持；会导致被丢弃的任务无法再次被执行 -->
+            <bean class="java.util.concurrent.ThreadPoolExecutor$CallerRunsPolicy"/>
+        </property>
+    </bean>
+
+    <!--Dto to Entity/Entity to Dto映射类-->
+    <bean id="dozer" class="org.dozer.DozerBeanMapper">
+        <property name="mappingFiles">
+            <list>
+                <value>dozerConfig/base.xml</value>
+            </list>
+        </property>
+    </bean>
+
+
+    <!--==============================================shiro__begin=============================================-->
+
+    <!-- 继承自AuthorizingRealm的自定义Realm,即指定Shiro验证用户登录的类为自定义的ShiroDbRealm.java -->
+
+    <bean id="myRealm" class="com.yxtech.sys.filter.ShiroFilter"/>
+
+    <bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor"/>
+    <!-- Shiro默认会使用Servlet容器的Session,可通过sessionMode属性来指定使用Shiro原生Session,
+    即<property name="sessionMode" value="native"/>,详细说明见官方文档 ,这里主要是设置
+    自定义的单Realm应用,若有多个Realm,可使用'realms'属性代替 -->
+    <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+        <property name="realm" ref="myRealm"/>
+        <!-- 使用下面配置的缓存管理器 -->
+        <property name="cacheManager" ref="cacheManager"/>
+        <!--session管理器-->
+        <property name="sessionManager" ref="sessionManager" />
+
+    </bean>
+
+    <!-- cacheManager -->
+    <bean id="cacheManager" class="org.crazycake.shiro.RedisCacheManager">
+        <property name="redisManager" ref="redisManager" />
+    </bean>
+
+    <bean id="sessionManager" class="org.apache.shiro.web.session.mgt.DefaultWebSessionManager">
+        <property name="sessionDAO" ref="redisSessionDAO" />
+        <!--<property name="sessionIdCookie.domain" value="localhost"/>-->
+        <property name="sessionIdCookie.name" value="jsid"/>
+        <!-- 测试环境 -->
+        <!--<property name="sessionIdCookie.domain" value=".ztydata.com.cn"/>-->
+        <!-- 生产环境-->
+        <!--<property name="sessionIdCookie.domain" value=".tupmbook.com"/>-->
+        <property name="sessionIdCookie.path" value="/"/>
+
+    </bean>
+
+    <bean id="redisSessionDAO" class="org.crazycake.shiro.RedisSessionDAO">
+        <property name="redisManager" ref="redisManager" />
+    </bean>
+
+
+    <bean id="redisManager" class="org.crazycake.shiro.RedisManager">
+        <property name="host" value="${redis.host}"/>
+        <property name="port" value="${redis.port}"/>
+        <property name="expire" value="${redis.expire}"/>
+        <!--optional properties:-->
+        <property name="timeout" value="${redis.timeout}"/>
+        <property name="password" value="${redis.pass}"/>
+
+    </bean>
+
+    <bean class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">
+        <property name="securityManager" ref="securityManager"/>
+    </bean>
+
+    <!-- Shiro主过滤器本身功能十分强大,其强大之处就在于它支持任何基于URL路径表达式的、自定义的过滤器的执行 -->
+    <!-- Web应用中,Shiro可控制的Web请求必须经过Shiro主过滤器的拦截,Shiro对基于Spring的Web应用提供了完美的支持 -->
+    <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+        <!-- Shiro的核心安全接口,这个属性是必须的 -->
+        <property name="securityManager" ref="securityManager"/>
+        <!-- 要求登录时的链接(可根据项目的URL进行替换),非必须的属性,默认会自动寻找Web工程根目录下的"/login.jsp"页面 -->
+        <property name="loginUrl" value="/user/403"/>
+        <!-- 登录成功后要跳转的连接(本例中此属性用不到,因为登录成功后的处理逻辑在LoginController里硬编码为main.jsp了) -->
+        <!--<property name="successUrl" value="/test.html"/>-->
+        <!-- 用户访问未对其授权的资源时,所显示的连接 -->
+
+
+        <!-- 若想更明显的测试此属性可以修改它的值,如unauthor.jsp,然后用[玄玉]登录后访问/admin/listUser.jsp就看见浏览器会显示unauthor.jsp -->
+        <property name="unauthorizedUrl" value="/user/403"/>
+        <!-- Shiro连接约束配置,即过滤链的定义 -->
+        <!-- 此处可配合我的这篇文章来理解各个过滤连的作用http://blog.csdn.net/jadyer/article/details/12172839 -->
+        <!-- 下面value值的第一个'/'代表的路径是相对于HttpServletRequest.getContextPath()的值来的 -->
+        <!-- anon：它对应的过滤器里面是空的,什么都没做,这里.do和.jsp后面的*表示参数,比方说login.jsp?main这种 -->
+        <!-- authc：该过滤器下的页面必须验证(登录)后才能访问,它是Shiro内置的一个拦截器org.apache.shiro.web.filter.authc.FormAuthenticationFilter -->
+        <property name="filterChainDefinitions">
+            <value>
+                /user/registe = anon <!-- 注册 -->
+                /user/login = anon <!--登录-->
+                /user/loginout = logout <!--登出-->
+                /book/detailEmail = anon
+                /qrcode/coursewareDetail = anon <!--课件二维码明细-->
+                /qrcode/detail=anon
+                /qrcode/serialNumExport = anon <!-- 刮刮乐二维码-->
+                /qrcode/qrRedirec=anon
+                /qrcode/courseRedirec=anon
+                /qrcode/guaRedirec=anon
+                /qrcode/callback = anon <!-- 智学云回调接口-->
+                /qrcode/userStatus = anon
+                /resource/coursewareDownload = anon <!--课件打包下载-->
+                /resource/passwordApply = anon<!--添加客户信息-->
+                /resource/updateInfo = anon<!--添加客户信息-->
+                /resource/visit = anon <!--验证访问密码-->
+                /resource/passwordInfo = anon<!-- 获取客户信息-->
+                /resource/zipDownload = anon
+                /resource/resDetail = anon
+                /resource/openDetail = anon
+                /resource/status = anon
+                /file/down/** = anon <!--文件下载-->
+                /file/view/** = anon <!--文件预览-->
+                /file/downNum = anon <!--文件下载次数-->
+                /email/collection = anon <!--向客户邮箱发送邮件-->
+                /email/verify = anon<!-- 客户邮箱验证-->
+                /count/** = anon
+                /press/** = anon
+                /examine/emailSend = anon <!-- 邮箱一键审核通过-->
+                /report/add = anon<!-- 举报-->
+                /sample/apply = anon <!-- 样书申请-->
+                /news/detail = anon
+                /ueditor/** = anon
+                /test/** = anon
+                /qiniuzip/getQiniuResult=anon
+                /** = anon
+            </value>
+        </property>
+    </bean>
+
+    <bean id="poolConfig" class="redis.clients.jedis.JedisPoolConfig">
+        <property name="maxIdle" value="${redis.maxIdle}" />
+        <property name="maxTotal" value="${redis.maxActive}" />
+        <property name="maxWaitMillis" value="${redis.maxWait}" />
+        <property name="testOnBorrow" value="${redis.testOnBorrow}" />
+    </bean>
+
+    <bean id="connectionFactory" class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory"
+          p:hostName="${redis.host}"
+          p:port="${redis.port}"
+          p:password="${redis.pass}"
+          p:timeout="${redis.timeout}"
+          p:database="${redis.default.db}"
+          p:poolConfig-ref="poolConfig"/>
+
+    <!--用于存储智学云token-->
+    <bean id="incrementRedisTemplate" class="org.springframework.data.redis.core.RedisTemplate"
+          p:connectionFactory-ref="connectionFactory">
+        <property name="keySerializer">
+            <bean class="org.springframework.data.redis.serializer.StringRedisSerializer" />
+        </property>
+        <property name="valueSerializer">
+            <bean class="org.springframework.data.redis.serializer.StringRedisSerializer" />
+        </property>
+    </bean>
+</beans>

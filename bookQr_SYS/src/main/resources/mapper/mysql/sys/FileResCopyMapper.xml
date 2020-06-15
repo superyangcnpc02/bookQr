@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yxtech.sys.dao.FileResCopyMapper" >
+  <resultMap id="BaseResultMap" type="com.yxtech.sys.domain.FileResCopy" >
+    <!--
+      WARNING - @mbggenerated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="path" property="path" jdbcType="VARCHAR" />
+    <result column="size" property="size" jdbcType="INTEGER" />
+    <result column="suffix" property="suffix" jdbcType="VARCHAR" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="uuid" property="uuid" jdbcType="VARCHAR" />
+    <result column="create_Time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="md5" property="md5" jdbcType="VARCHAR" />
+    <result column="status" property="status" jdbcType="INTEGER" />
+    <result column="zhixueid" property="zhixueid" jdbcType="BIGINT" />
+    <result column="viewurl" property="viewurl" jdbcType="VARCHAR" />
+    <result column="qizhixueid" property="qizhixueid" jdbcType="BIGINT" />
+  </resultMap>
+  <select id="getFilesNoUpload"  resultMap="BaseResultMap">
+    SELECT * FROM t_file_res_copy where zhixueid is NULL
+  </select>
+
+  <update id="updateFileResCopy" parameterType="java.util.Map">
+    UPDATE  t_file_res_copy  SET zhixueid = #{zhixueid},viewurl= #{viewurl} WHERE  id = #{id}
+  </update>
+</mapper>

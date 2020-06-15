@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yxtech.sys.dao.ClientMapper">
+  <resultMap id="BaseResultMap" type="com.yxtech.sys.domain.Client">
+    <!--
+      WARNING - @mbggenerated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="job" jdbcType="VARCHAR" property="job" />
+    <result column="major" jdbcType="VARCHAR" property="major" />
+    <result column="lesson" jdbcType="VARCHAR" property="lesson" />
+    <result column="school" jdbcType="VARCHAR" property="school" />
+    <result column="depart" jdbcType="VARCHAR" property="depart" />
+    <result column="phone" jdbcType="VARCHAR" property="phone" />
+    <result column="qq" jdbcType="VARCHAR" property="qq" />
+    <result column="num" jdbcType="INTEGER" property="num" />
+    <result column="leader_Phone" jdbcType="VARCHAR" property="leaderPhone" />
+    <result column="book_Name" jdbcType="VARCHAR" property="bookName" />
+    <result column="desire" jdbcType="INTEGER" property="desire" />
+    <result column="editor" jdbcType="INTEGER" property="editor" />
+    <result column="email" jdbcType="VARCHAR" property="email" />
+    <result column="objective" jdbcType="VARCHAR" property="objective" />
+    <result column="plan" jdbcType="INTEGER" property="plan" />
+    <result column="plan_Time" jdbcType="VARCHAR" property="planTime" />
+    <result column="progress" jdbcType="INTEGER" property="progress" />
+    <result column="address" jdbcType="VARCHAR" property="address" />
+    <result column="open_Id" jdbcType="VARCHAR" property="openId" />
+    <result column="age" jdbcType="INTEGER" property="age" />
+    <result column="seat" jdbcType="VARCHAR" property="seat" />
+    <result column="sex" jdbcType="INTEGER" property="sex" />
+    <result column="teach" jdbcType="VARCHAR" property="teach" />
+    <result column="photo" jdbcType="VARCHAR" property="photo" />
+  </resultMap>
+</mapper>

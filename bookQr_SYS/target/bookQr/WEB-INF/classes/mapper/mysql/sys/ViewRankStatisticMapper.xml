@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yxtech.sys.dao.ViewRankStatisticMapper">
+  <resultMap id="BaseResultMap" type="com.yxtech.sys.domain.ViewRankStatistic">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="book_id" jdbcType="INTEGER" property="bookId" />
+    <result column="num" jdbcType="INTEGER" property="num" />
+    <result column="create_time" jdbcType="VARCHAR" property="createTime" />
+  </resultMap>
+
+  <update id="deleteViewRankStatistic" parameterType="java.util.Map">
+    delete from t_view_rank_statistic
+    where create_time >= #{beginTime}
+    and <![CDATA[ create_time <= #{endTime} ]]>
+  </update>
+
+  <insert id="insertViewRankStatistic" parameterType="java.util.Map">
+    INSERT INTO t_view_rank_statistic (book_id,num,create_time)
+    SELECT
+      t.id book_id,
+      SUM(tqvr.num) num,
+      DATE_FORMAT(tqvr.create_Time,"%Y-%m-%d") create_Time
+    FROM
+      t_book t
+    INNER JOIN t_qr_view_rank tqvr ON t.id = tqvr.book_Id
+    WHERE
+      t.type = 0
+    AND tqvr.create_Time >= #{beginTime}
+    AND <![CDATA[ tqvr.create_Time <= #{endTime} ]]>
+
+    GROUP BY t.id,DATE_FORMAT(tqvr.create_Time,"%Y-%m-%d")
+
+  </insert>
+
+  <select id="queryByPageViewRankStatistic" parameterType="java.util.Map" resultType="com.yxtech.sys.vo.count.BookCountVo">
+      SELECT
+          t.id bookId,
+          t.`name` bookName,
+          SUM(tvrs.num) viewNum,
+          t.press_Id pressId,
+          t.press pressName,
+          t.editor,
+          t.`code`,
+          t.onwer editorId
+      FROM
+        t_book t
+      LEFT JOIN t_view_rank_statistic tvrs ON t.id = tvrs.book_id
+      <include refid="where_viewRankStatistic"/>
+      GROUP BY t.id
+      ORDER BY viewNum DESC
+      limit #{pageNo},#{pageSize}
+  </select>
+
+  <select id="queryViewRankStatisticCount" parameterType="java.util.Map" resultType="java.lang.Integer">
+    SELECT
+      COUNT(distinct t.id)
+    FROM
+        t_book t
+    LEFT JOIN t_view_rank_statistic tvrs ON t.id = tvrs.book_id
+    <include refid="where_viewRankStatistic"/>
+  </select>
+
+  <sql id="where_viewRankStatistic">
+      WHERE
+      t.type = 0
+      <if test="keyword != null and keyword != ''">
+          AND t.`name` like CONCAT('%',#{keyword},'%')
+      </if>
+      <if test="pressId != null and pressId != 0">
+          AND t.press_Id = #{pressId}
+      </if>
+      <if test="bookId != null and bookId != ''">
+          AND t.id = #{bookId}
+      </if>
+      <if test="formal != null">
+          AND t.formal = #{formal}
+      </if>
+      <if test="beginTime != null and beginTime != ''">
+          AND tvrs.create_Time >= #{beginTime}
+      </if>
+      <if test="endTime != null and endTime != ''">
+          AND <![CDATA[ tvrs.create_time <= #{endTime} ]]>
+      </if>
+  </sql>
+</mapper>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yxtech.sys.dao.BookQrMapper">
+  <resultMap id="BaseResultMap" type="com.yxtech.sys.domain.BookQr">
+    <!--
+      WARNING - @mbggenerated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="book_Id" jdbcType="INTEGER" property="bookId" />
+    <result column="page" jdbcType="INTEGER" property="page" />
+    <result column="indexs" jdbcType="INTEGER" property="indexs" />
+    <result column="url" jdbcType="VARCHAR" property="url" />
+    <result column="net_url" jdbcType="VARCHAR" property="netUrl" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="num" jdbcType="INTEGER" property="num" />
+    <result column="onwer" jdbcType="INTEGER" property="onwer" />
+    <result column="remark" jdbcType="VARCHAR" property="remark" />
+    <result column="qr_Type" jdbcType="INTEGER" property="qrType" />
+    <result column="secrecy" jdbcType="INTEGER" property="secrecy" />
+    <result column="is_send" jdbcType="INTEGER" property="isSend" />
+    <result column="view_Num" jdbcType="INTEGER" property="viewNum" />
+    <result column="preview_Num" jdbcType="INTEGER" property="previewNum" />
+    <result column="zip_Zhixueid" property="zipZhixueid" jdbcType="BIGINT" />
+    <result column="zip_Status" jdbcType="INTEGER" property="zipStatus" />
+    <result column="zip_Persistentid" jdbcType="VARCHAR" property="zipPersistentId" />
+    <result column="zip_callback_content" jdbcType="VARCHAR" property="zipCallbackContent" />
+    <result column="can_read" javaType="INTEGER" property="canRead" />
+    <result column="create_Time" jdbcType="TIMESTAMP" property="createTime" />
+  </resultMap>
+
+  <select id="getListByBookId" parameterType="int" resultMap="BaseResultMap">
+    select * from t_qr where qr_Type=1 and book_Id=#{bookId}
+  </select>
+
+  <select id="getResNumThanTwo" resultMap="BaseResultMap" resultType="int">
+    SELECT qr_Id as id,COUNT(*) as num from t_resources   where down_Load=1 GROUP BY qr_Id HAVING num>2 and qr_Id!=0;
+  </select>
+
+</mapper>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yxtech.sys.dao.AdvBookRelationMapper" >
+  <resultMap id="BaseResultMap" type="com.yxtech.sys.domain.AdvBookRelation" >
+    <!--
+      WARNING - @mbggenerated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="adv_id" property="advId" jdbcType="INTEGER" />
+    <result column="book_id" property="bookId" jdbcType="INTEGER" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+  <insert id="insertBatchAdbBook" >
+    insert into t_adv_book_relation(adv_id, book_id) VALUES
+    <foreach collection="addBookIds" index="index" item="bookId" separator="," >
+      (#{advId}, #{bookId})
+    </foreach>
+  </insert>
+
+</mapper>

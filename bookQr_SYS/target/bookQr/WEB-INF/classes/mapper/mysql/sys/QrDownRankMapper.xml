@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yxtech.sys.dao.QrDownRankMapper" >
+  <resultMap id="BaseResultMap" type="com.yxtech.sys.domain.QrDownRank" >
+    <!--
+      WARNING - @mbggenerated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="press_Id" property="pressId" jdbcType="INTEGER" />
+    <result column="book_Id" property="bookId" jdbcType="INTEGER" />
+    <result column="qr_Id" property="qrId" jdbcType="INTEGER" />
+    <result column="res_Id" property="resId" jdbcType="INTEGER" />
+    <result column="openid" property="openid" jdbcType="VARCHAR" />
+    <result column="nickname" property="nickname" jdbcType="VARCHAR" />
+    <result column="sex" property="sex" jdbcType="VARCHAR" />
+    <result column="province" property="province" jdbcType="VARCHAR" />
+    <result column="city" property="city" jdbcType="VARCHAR" />
+    <result column="country" property="country" jdbcType="VARCHAR" />
+    <result column="headimgurl" property="headimgurl" jdbcType="VARCHAR" />
+    <result column="privilege" property="privilege" jdbcType="VARCHAR" />
+    <result column="unionid" property="unionid" jdbcType="VARCHAR" />
+    <result column="create_Time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="num" property="num" jdbcType="INTEGER" />
+  </resultMap>
+
+  <select id="getListByMap" parameterType="java.util.Map" resultMap="BaseResultMap">
+    SELECT * from t_qr_down_rank where res_Id=#{resId} and openid=#{openId} and  DATE_FORMAT(create_Time,'%Y-%m-%d')=curdate()
+  </select>
+</mapper>

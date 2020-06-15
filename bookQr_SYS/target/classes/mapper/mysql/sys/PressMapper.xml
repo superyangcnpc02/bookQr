@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yxtech.sys.dao.PressMapper">
+  <resultMap id="BaseResultMap" type="com.yxtech.sys.domain.Press">
+    <!--
+      WARNING - @mbggenerated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="remark" jdbcType="VARCHAR" property="remark" />
+    <result column="create_Time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="create_Id" jdbcType="INTEGER" property="createId" />
+  </resultMap>
+
+  <select id="getPressIdByName" resultType="INTEGER">
+    select t.id from t_press t where t.name = #{pressName}
+  </select>
+</mapper>

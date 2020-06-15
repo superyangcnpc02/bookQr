@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yxtech.sys.dao.BookRankStatisticMapper">
+  <resultMap id="BaseResultMap" type="com.yxtech.sys.domain.BookRankStatistic">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="book_id" jdbcType="INTEGER" property="bookId" />
+    <result column="num" jdbcType="INTEGER" property="num" />
+    <result column="create_time" jdbcType="VARCHAR" property="createTime" />
+  </resultMap>
+
+  <update id="deleteBookRankStatistic" parameterType="java.util.Map">
+    delete from t_book_rank_statistic
+    where create_time >= #{beginTime}
+    and <![CDATA[ create_time <= #{endTime} ]]>
+  </update>
+
+  <insert id="insertBookRankStatistic" parameterType="java.util.Map">
+    INSERT INTO t_book_rank_statistic (book_id,num,create_time)
+    SELECT
+        tq.book_Id book_id,
+        SUM(tqu.num) num,
+        DATE_FORMAT(tqu.create_time,"%Y-%m-%d") create_time
+    FROM
+        t_qr_userinfo tqu
+	INNER JOIN t_qr tq ON tqu.qr_Id = tq.id
+    WHERE tqu.create_Time >= #{beginTime}
+    and <![CDATA[ tqu.create_time <= #{endTime} ]]>
+    GROUP BY tq.book_Id,DATE_FORMAT(tqu.create_time,"%Y-%m-%d");
+
+  </insert>
+
+  <select id="queryByPageBookRankStatistic" parameterType="java.util.Map" resultType="com.yxtech.sys.vo.count.BookCountVo">
+    SELECT
+        t.id AS bookId,
+        t.`name` AS bookName,
+        t.`code`,
+        t.editor,
+        t.onwer AS editorId,
+        t.press_Id AS pressId,
+        t.press AS pressName,
+        sum(tbrs.num) AS viewNum
+    FROM
+        t_book t
+    LEFT JOIN t_book_rank_statistic tbrs ON tbrs.book_id = t.id
+    <include refid="where_bookRankStatistic"/>
+    GROUP BY t.id
+    ORDER BY viewNum DESC
+    LIMIT #{offset},#{pageSize}
+  </select>
+
+  <select id="queryBookRankStatisticCount" parameterType="java.util.Map" resultType="java.lang.Integer">
+    SELECT
+      COUNT(distinct t.id)
+    FROM
+        t_book t
+    LEFT JOIN t_book_rank_statistic tbrs ON tbrs.book_id = t.id
+    <include refid="where_bookRankStatistic"/>
+  </select>
+
+  <sql id="where_bookRankStatistic">
+    WHERE
+      t.type = 0
+    <if test="formal != null">
+      AND t.formal = #{formal}
+    </if>
+    <if test="pressId != 0">
+      AND t.press_Id =#{pressId}
+    </if>
+
+    <if test="beginTime != null and beginTime != ''">
+      AND tbrs.create_Time >= #{beginTime}
+    </if>
+    <if test="endTime != null and endTime != ''">
+      AND <![CDATA[ tbrs.create_time <= #{endTime} ]]>
+    </if>
+  </sql>
+</mapper>

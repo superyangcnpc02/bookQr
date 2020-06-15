@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yxtech.sys.dao.UserMapper">
+  <resultMap id="BaseResultMap" type="com.yxtech.sys.domain.User">
+    <!--
+      WARNING - @mbggenerated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="user_Id" jdbcType="VARCHAR" property="userId" />
+    <result column="email" jdbcType="VARCHAR" property="email" />
+    <result column="password" jdbcType="VARCHAR" property="password" />
+    <result column="login_Time" jdbcType="TIMESTAMP" property="loginTime" />
+    <result column="login_Num" jdbcType="INTEGER" property="loginNum" />
+    <result column="phone" jdbcType="VARCHAR" property="phone" />
+    <result column="user_Name" jdbcType="VARCHAR" property="userName" />
+    <result column="role" jdbcType="INTEGER" property="role" />
+    <result column="photo" jdbcType="VARCHAR" property="photo" />
+    <result column="org_Id" jdbcType="INTEGER" property="orgId" />
+    <result column="prss_Id" jdbcType="INTEGER" property="pressId" />
+    <result column="status" jdbcType="INTEGER" property="status" />
+  </resultMap>
+
+  <select id="getUserIdByUserName" resultType="java.lang.Integer">
+    SELECT IFNULL(MAX(id) ,0) id FROM t_user where user_Name = #{editor} and status != 3 AND press_Id = #{pressId}
+  </select>
+
+  <update id="updateUserPressById" parameterType="java.util.Map">
+    UPDATE  t_user  SET
+    press_Id = #{pressId} WHERE  id = #{id}
+  </update>
+
+  <select id="getPressEditorIfExists" resultType="java.lang.Integer">
+    SELECT IFNULL(MAX(t.id) ,0) id FROM t_user t WHERE t.press_Id = #{pressId} AND t.user_Name = #{name}
+  </select>
+
+  <select id="getEmailIfExists" resultType="java.lang.Integer">
+    SELECT IFNULL(MAX(t.id) ,0) id FROM t_user t WHERE t.email = #{email}
+  </select>
+
+  <select id="getUserByUserName" resultMap="BaseResultMap">
+    select * from t_user tu where tu.role = 1 and tu.`status` != 3 and user_Name = #{editor} and press_Id = #{pressId}
+  </select>
+
+</mapper>

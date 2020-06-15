@@ -1,0 +1,551 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yxtech.sys.dao.BookMapper">
+  <resultMap id="BaseResultMap" type="com.yxtech.sys.domain.Book">
+    <!--
+      WARNING - @mbggenerated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="author" jdbcType="VARCHAR" property="author" />
+    <result column="code" jdbcType="VARCHAR" property="code" />
+    <result column="category" jdbcType="VARCHAR" property="category" />
+    <result column="category_Id" jdbcType="INTEGER" property="categoryId" />
+    <result column="categorysuper_Id" jdbcType="INTEGER" property="categorySuperId" />
+    <result column="cover" jdbcType="VARCHAR" property="cover" />
+    <result column="isbn" jdbcType="VARCHAR" property="isbn" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="press" jdbcType="VARCHAR" property="press" />
+    <result column="press_Id" jdbcType="INTEGER" property="pressId" />
+    <result column="remark" jdbcType="VARCHAR" property="remark" />
+    <result column="logo" jdbcType="VARCHAR" property="logo" />
+    <result column="width" jdbcType="INTEGER" property="width" />
+    <result column="onwer" jdbcType="INTEGER" property="onwer" />
+    <result column="auditor_Email" jdbcType="VARCHAR" property="auditorEmail" />
+    <result column="auditor_Id" jdbcType="INTEGER" property="auditorId" />
+    <result column="bookask_Url" jdbcType="VARCHAR" property="bookaskUrl" />
+    <result column="quoteId" jdbcType="INTEGER" property="quoteid" />
+    <result column="status" jdbcType="INTEGER" property="status" />
+    <result column="view_Num" jdbcType="INTEGER" property="viewNum" />
+    <result column="preview_Num" jdbcType="INTEGER" property="previewNum" />
+    <result column="tip" jdbcType="LONGVARCHAR" property="tip" />
+    <result column="type" jdbcType="INTEGER" property="type" />
+    <result column="create_Time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="editor" jdbcType="VARCHAR" property="editor" />
+    <result column="formal" jdbcType="INTEGER" property="formal" />
+    <result column="is_publication" jdbcType="INTEGER" property="isPublication" />
+    <result column="only_webchat" jdbcType="INTEGER" property="onlyWebchat" />
+    <result column="sw_Category" jdbcType="VARCHAR" property="swCategory" />
+    <result column="wd_Category" jdbcType="VARCHAR" property="wdCategory" />
+    <result column="zy_Category" jdbcType="VARCHAR" property="zyCategory" />
+    <result column="kc_Category" jdbcType="VARCHAR" property="kcCategory" />
+  </resultMap>
+
+  <resultMap id="PowerQrVoMap" type="com.yxtech.sys.vo.PowerQrVo">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="code" jdbcType="VARCHAR" property="code" />
+    <result column="category" jdbcType="VARCHAR" property="category" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="quoteId" jdbcType="INTEGER" property="quoteId" />
+    <result column="press" jdbcType="VARCHAR" property="press" />
+    <result column="create_Time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="editor" jdbcType="VARCHAR" property="editor" />
+    <result column="author" jdbcType="VARCHAR" property="author" />
+    <result column="oprator" jdbcType="VARCHAR" property="oprator" />
+    <result column="num" jdbcType="INTEGER" property="num" />
+
+  </resultMap>
+
+  <insert id="insertBooks" parameterType="java.util.List">
+    INSERT INTO t_book(author, CODE,isbn, cover, category,category_Id, NAME, press,press_Id , remark, onwer, type,create_Time, editor,quoteId) VALUES
+    <foreach collection="list" index="index" item="item" separator=",">
+      (#{item.author}, #{item.code}, #{item.isbn}, #{item.cover}, #{item.category},#{item.categoryId}, #{item.name}, #{item.press}, #{item.pressId}, #{item.remark}, #{item.onwer}, 1,now(), #{item.editor}, #{item.quoteid})
+    </foreach>
+  </insert>
+
+  <select id="selectReportBooks" parameterType="java.util.Map" resultMap="BaseResultMap">
+    SELECT DISTINCT book.id from t_book book LEFT JOIN t_qr qr ON book.id=qr.book_Id LEFT JOIN t_report report on report.qrcode_Id=qr.id where report.id is not NULL
+    <if test="keyword != ''">
+      AND book.name like CONCAT('%',#{keyword},'%')
+    </if>
+    <if test="pressId != 0">
+      AND book.press_Id =#{pressId}
+    </if>
+    <if test="onwer != ''">
+      AND book.onwer =#{onwer}
+    </if>
+    ORDER by report.id DESC
+    limit #{offset},#{pageSize}
+  </select>
+  <select id="countReportBooks" parameterType="java.util.Map" resultType="INTEGER">
+    SELECT COUNT(DISTINCT book.id) from t_book book LEFT JOIN t_qr qr ON book.id=qr.book_Id LEFT JOIN t_report report on report.qrcode_Id=qr.id where report.id is not NULL
+    <if test="keyword != ''">
+      AND book.name like CONCAT('%',#{keyword},'%')
+    </if>
+    <if test="pressId != 0">
+      AND book.press_Id =#{pressId}
+    </if>
+    <if test="onwer != ''">
+      AND book.onwer =#{onwer}
+    </if>
+  </select>
+
+  <!--扫描排行列表-->
+  <select id="selectScanBooks" parameterType="java.util.Map" resultType="com.yxtech.sys.vo.count.BookCountVo">
+    SELECT
+			t.id AS bookId,
+			t.`name` AS bookName,
+      t.`code`,
+      t.editor,
+      t.onwer AS editorId,
+      t.press_Id AS pressId,
+      t.press AS pressName,
+			sum(tqu.num) AS viewNum
+		FROM
+			t_book t
+		LEFT JOIN t_qr tq ON t.id = tq.book_Id
+		LEFT JOIN t_qr_userinfo tqu ON tqu.qr_Id = tq.id
+		WHERE
+			t.type = 0
+        <if test="formal != null">
+          AND t.formal = #{formal}
+         </if>
+        <if test="pressId != 0">
+          AND t.press_Id =#{pressId}
+        </if>
+
+        <if test="beginTime != null and beginTime != ''">
+          AND Date(tqu.create_Time) &gt;= Date(#{beginTime})
+        </if>
+        <if test="endTime != null and endTime != ''">
+          AND Date(tqu.create_Time) &lt;= Date(#{endTime})
+       </if>
+		GROUP BY t.id
+    ORDER BY viewNum DESC
+    limit #{offset},#{pageSize}
+  </select>
+  <!--扫描排行总数-->
+  <select id="countScanBooks" parameterType="java.util.Map" resultType="INTEGER">
+    SELECT
+    count(distinct t.id)
+    FROM
+    t_book t
+    LEFT JOIN t_qr tq ON t.id = tq.book_Id
+    LEFT JOIN t_qr_userinfo tqu ON tqu.qr_Id = tq.id
+    WHERE
+    t.type = 0
+    <if test="formal != null">
+      AND t.formal = #{formal}
+    </if>
+    <if test="pressId != 0">
+      AND t.press_Id =#{pressId}
+    </if>
+
+    <if test="beginTime != null and beginTime != ''">
+      AND Date(tqu.create_Time) &gt;= Date(#{beginTime})
+    </if>
+    <if test="endTime != null and endTime != ''">
+      AND Date(tqu.create_Time) &lt;= Date(#{endTime})
+    </if>
+
+  </select>
+
+
+  <!--导出图书信息扫描列表-->
+  <select id="exportBookList"  resultType="com.yxtech.sys.vo.count.BookListVo">
+    SELECT
+      tb.`code`,
+      tb.`name` bookName,
+      tb.category,
+      IF(tb.quoteId = 1, '否', '是') quoteId,
+      tb.press pressName,
+      tb.editor,
+      tb.author,
+      tq.`name` qrName,
+      tq.qr_Type qrType,
+    (select count(id) from t_qr_userinfo tqu where tqu.qr_Id = tq.id) viewNum,
+      tr.id resId,
+      tfr.`name` resName,
+      tfr.suffix,
+      tfr.size resSize,
+    IFNULL((SELECT SUM(tqdr.num) FROM t_qr_down_rank tqdr WHERE tqdr.res_Id = tr.id ),0) downNum,
+    IFNULL ((select SUM(trvr.num) from t_qr_view_rank trvr where trvr.qr_Id = tq.id),0) previewNum
+    FROM
+      t_book tb
+    LEFT JOIN t_qr tq on tb.id = tq.book_Id
+    LEFT JOIN t_resources tr on tq.id = tr.qr_Id
+    LEFT JOIN t_file_res tfr on tr.file_Uuid = tfr.uuid
+    <where>
+      tb.formal = 0
+      <if test="create == 0">
+        AND tb.quoteId != 2
+      </if>
+      <if test="create == 2">
+        AND tb.type=1 AND tb.quoteId = 1
+      </if>
+      <if test="create == 1">
+        AND tb.type=0 and tr.id is not null
+      </if>
+      <if test="pressId != 0">
+        AND tb.press_Id =#{pressId}
+      </if>
+      <if test="parentCategoryId != 0">
+        AND tb.categorysuper_Id =#{parentCategoryId}
+      </if>
+      <if test="categoryId != 0">
+        AND tb.category_Id =#{categoryId}
+      </if>
+      <if test="keyword != null and keyword != ''">
+        AND (tb.`name` like CONCAT('%',#{keyword},'%') OR tb.author like CONCAT('%',#{keyword},'%') OR tb.editor like CONCAT('%',#{keyword},'%'))
+      </if>
+      <if test="codes != null and codes != '' ">
+        AND
+        <foreach collection="codes" item="item" index="index"  open="(" separator="or" close=")">
+          tb.code = #{item}
+        </foreach>
+      </if>
+      <if test="code != null and code != '' ">
+        AND tb.code like CONCAT('%',#{code},'%')
+      </if>
+    </where>
+    ORDER BY tb.id DESC,tq.qr_Type ASC,tq.id DESC,tr.indexs asc
+  </select>
+
+  <!--导出扫描排行列表-->
+  <select id="exportBookRank" parameterType="java.util.Map" resultType="com.yxtech.sys.vo.count.BookCountVo">
+    SELECT
+    t.id AS bookId,
+    t.`name` AS bookName,
+    t.`code`,
+    t.editor,
+    t.onwer AS editorId,
+    t.press_Id AS pressId,
+    t.press AS pressName,
+    sum(tqu.num) AS viewNum
+    FROM
+    t_book t
+    LEFT JOIN t_qr tq ON t.id = tq.book_Id
+    LEFT JOIN t_qr_userinfo tqu ON tqu.qr_Id = tq.id
+    WHERE
+    t.type = 0
+    <if test="pressId != 0">
+      AND t.press_Id =#{pressId}
+    </if>
+    <if test="formal != null">
+      AND t.formal = #{formal}
+    </if>
+    <if test="beginTime != null and beginTime != ''">
+      AND Date(tqu.create_Time) &gt;= Date(#{beginTime})
+    </if>
+    <if test="endTime != null and endTime != ''">
+      AND Date(tqu.create_Time) &lt;= Date(#{endTime})
+    </if>
+    GROUP BY t.id
+    ORDER BY viewNum DESC
+  </select>
+
+  <select id="selectViewRank" parameterType="java.util.Map" resultType="com.yxtech.sys.vo.count.BookCountVo">
+    SELECT
+      t.id bookId,
+      t.`name` bookName,
+      SUM(tqvr.num) viewNum,
+      t.press_Id pressId,
+      t.press pressName,
+      t.editor,
+      t.`code`,
+      t.onwer editorId
+    FROM
+      t_book t
+    LEFT JOIN t_qr_view_rank tqvr ON t.id = tqvr.book_Id
+    WHERE
+      t.type = 0
+      <if test="keyword != null and keyword != ''">
+        t.`name` like CONCAT('%',#{keyword},'%')
+      </if>
+      <if test="pressId != null and pressId != 0">
+        AND t.press_Id = #{pressId}
+      </if>
+      <if test="bookId != null and bookId != ''">
+        AND t.id = #{bookId}
+      </if>
+      <if test="formal != null">
+        AND t.formal = #{formal}
+      </if>
+      <if test="beginTime != null and beginTime != ''">
+        AND Date(tqvr.create_Time) &gt;= Date(#{beginTime})
+      </if>
+      <if test="endTime != null and endTime != ''">
+        AND Date(tqvr.create_Time) &lt;= Date(#{endTime})
+      </if>
+      GROUP BY t.id
+    ORDER BY
+    viewNum DESC
+    limit #{pageNo},#{pageSize}
+  </select>
+
+  <select id="countViewRank" parameterType="java.util.Map" resultType="INTEGER">
+    SELECT
+    count(distinct t.id)
+    FROM
+      t_book t
+      LEFT JOIN t_qr_view_rank tqvr ON t.id = tqvr.book_Id
+    WHERE
+      t.type = 0
+      <if test="keyword != null and keyword != ''">
+        t.`name` like CONCAT('%',#{keyword},'%')
+      </if>
+      <if test="pressId != null and pressId != 0">
+        AND t.press_Id = #{pressId}
+      </if>
+      <if test="bookId != null and bookId != ''">
+        AND t.id = #{bookId}
+      </if>
+      <if test="formal != null">
+        AND t.formal = #{formal}
+      </if>
+      <if test="beginTime != null and beginTime != ''">
+        AND Date(tqvr.create_Time) &gt;= Date(#{beginTime})
+      </if>
+      <if test="endTime != null and endTime != ''">
+        AND Date(tqvr.create_Time) &lt;= Date(#{endTime})
+      </if>
+  </select>
+
+  <select id="getQrViewRank" resultType="com.yxtech.sys.vo.count.QrCountVo">
+    SELECT
+        tq.id qrId,
+        tq.`name` qrName,
+        sum(tqvr.num) qrViewNum
+    FROM
+        t_qr_view_rank tqvr
+    LEFT JOIN t_qr tq ON tqvr.qr_Id = tq.id
+    WHERE
+    tq.qr_Type !=3
+        <if test="bookId != null and bookId != 0">
+          AND tqvr.book_Id = #{bookId}
+        </if>
+        <if test="beginTime != null and beginTime != ''">
+          AND Date(tqvr.create_Time) &gt;= Date(#{beginTime})
+        </if>
+        <if test="endTime != null and endTime != ''">
+          AND Date(tqvr.create_Time) &lt;= Date(#{endTime})
+        </if>
+    GROUP BY
+        tqvr.qr_Id
+    ORDER BY qrViewNum DESC
+  </select>
+
+  <select id="exportViewRank" parameterType="java.util.Map" resultType="com.yxtech.sys.vo.count.BookCountVo">
+    SELECT
+    t.id bookId,
+    t.`name` bookName,
+    SUM(tqvr.num) viewNum,
+    t.press_Id pressId,
+    t.press pressName,
+    t.formal,
+    t.editor,
+    t.`code`,
+    t.onwer editorId
+    FROM
+    t_book t
+    LEFT JOIN t_qr_view_rank tqvr ON t.id = tqvr.book_Id
+    WHERE
+    t.type = 0
+    <if test="keyword != null and keyword != ''">
+      t.`name` like CONCAT('%',#{keyword},'%')
+    </if>
+    <if test="pressId != null and pressId != 0">
+      AND t.press_Id = #{pressId}
+    </if>
+    <if test="bookId != null and bookId != ''">
+      AND t.id = #{bookId}
+    </if>
+    <if test="formal != null">
+      AND t.formal = #{formal}
+    </if>
+    <if test="beginTime != null and beginTime != ''">
+      AND Date(tqvr.create_Time) &gt;= Date(#{beginTime})
+    </if>
+    <if test="endTime != null and endTime != ''">
+      AND Date(tqvr.create_Time) &lt;= Date(#{endTime})
+    </if>
+    GROUP BY t.id
+    ORDER BY
+    viewNum DESC
+  </select>
+
+  <select id="getAdvBooksByIds" parameterType="java.util.List" resultType="com.yxtech.sys.dto.AdvBookDto">
+    SELECT id, name FROM t_book WHERE id IN
+    <foreach collection="advBookIds" index="index" item="bookId" open="(" separator="," close=")" >
+      #{bookId}
+    </foreach>
+  </select>
+
+  <select id="getBookCountByMap" resultType="INTEGER">
+    SELECT
+      COUNT(*)
+    FROM
+    (SELECT
+    *
+    FROM
+    t_book
+    WHERE
+    id IN (
+    SELECT
+    qr.book_Id
+    FROM
+    t_qr qr
+    LEFT JOIN t_resources rs ON qr.id = rs.qr_Id
+    WHERE
+    qr.qr_Type = 3
+    AND rs.qr_Id IS NOT NULL
+    )
+    ) t
+    <where>
+      t.formal = #{type}
+      <if test="categoryId != 0">
+        AND t.category_Id = #{categoryId}
+      </if>
+      <if test="categorysuperId != 0">
+        AND t.categorysuper_Id = #{categorysuperId}
+      </if>
+      <if test="keyword !=null and keyword != ''">
+        AND (t.`name` like CONCAT('%',#{keyword},'%')
+        OR t.author like CONCAT('%',#{keyword},'%')
+        OR t.editor like CONCAT('%',#{keyword},'%'))
+      </if>
+      <if test="isbns !=null and isbns != ''">
+        <if test="size == 1">
+          AND  t.`code` like CONCAT('%',#{codeOne},'%')
+        </if>
+        <if test="size != 0 and size != 1">
+          AND  t.`code` IN
+          <foreach collection="codeSize" item="code" index="index" open="(" separator="," close=")">
+            #{code}
+          </foreach>
+        </if>
+      </if>
+      <if test="pressId != 0">
+        AND t.press_Id = #{pressId}
+      </if>
+      <if test="editor != 0">
+        AND t.onwer = #{editor}
+      </if>
+    </where>
+      ORDER BY t.id DESC
+  </select>
+
+  <!--刮刮卡列表-->
+  <select id="getList" resultMap="BaseResultMap">
+    SELECT
+      t.cover,
+      t.id,
+      t. NAME,
+      t.create_Time
+    FROM
+      (SELECT
+          *
+      FROM
+          t_book
+      WHERE
+          id IN (
+              SELECT
+                  qr.book_Id
+              FROM
+                  t_qr qr
+              LEFT JOIN t_resources rs ON qr.id = rs.qr_Id
+              WHERE
+                  qr.qr_Type = 3
+              AND rs.qr_Id IS NOT NULL
+          )
+      ) t
+    <where>
+      t.formal = #{type}
+      <if test="categoryId !=0 and categoryId!= ''">
+        AND t.category_Id = #{categoryId}
+      </if>
+      <if test="categorysuperId !=0 and categorysuperId != ''">
+        AND t.categorysuper_Id = #{categorysuperId}
+      </if>
+      <if test="keyword !=null and keyword != ''">
+        AND (t.`name` like CONCAT('%',#{keyword},'%')
+        OR t.author like CONCAT('%',#{keyword},'%')
+        OR t.editor like CONCAT('%',#{keyword},'%'))
+      </if>
+      <if test="isbns !=null and isbns != ''">
+        <if test="size == 1">
+          AND  t.`code` like CONCAT('%',#{codeOne},'%')
+        </if>
+        <if test="size != 0 and size!=1">
+          AND  t.`code` IN
+          <foreach collection="codeSize" item="code" index="index" open="(" separator="," close=")">
+            #{code}
+          </foreach>
+        </if>
+      </if>
+      <if test="pressId != 0">
+        AND t.press_Id = #{pressId}
+      </if>
+      <if test="editor != 0">
+        AND t.onwer = #{editor}
+      </if>
+    </where>
+      ORDER BY t.id DESC
+    LIMIT #{pageNo}, #{pageSize}
+  </select>
+
+  <!--导出刮刮卡列表-->
+  <select id="exportList" resultMap="PowerQrVoMap">
+    SELECT
+    *
+    FROM
+    (SELECT
+    *
+    FROM
+    t_book
+    WHERE
+    id IN (
+    SELECT
+    qr.book_Id
+    FROM
+    t_qr qr
+    LEFT JOIN t_resources rs ON qr.id = rs.qr_Id
+    WHERE
+    qr.qr_Type = 3
+    AND rs.qr_Id IS NOT NULL
+    )
+    ) t
+    <where>
+      t.formal = #{type}
+      <if test="categoryId != 0">
+        AND t.category_Id = #{categoryId}
+      </if>
+      <if test="categorysuperId != 0">
+        AND t.categorysuper_Id = #{categorysuperId}
+      </if>
+    <if test="keyword !=null and keyword != ''">
+      AND (t.`name` like CONCAT('%',#{keyword},'%')
+      OR t.author like CONCAT('%',#{keyword},'%')
+      OR t.editor like CONCAT('%',#{keyword},'%'))
+    </if>
+    <if test="isbns !=null and isbns != ''">
+      <if test="size == 1">
+        AND t.code like CONCAT('%',#{codeOne},'%')
+      </if>
+      <if test="size != 0 and size!=1">
+        AND t.code IN
+        <foreach collection="codeSize" item="code" index="index" open="(" separator="," close=")">
+          #{code}
+        </foreach>
+      </if>
+    </if>
+    <if test="pressId != 0">
+      AND t.press_Id = #{pressId}
+    </if>
+    <if test="editor != 0">
+      AND t.onwer = #{editor}
+    </if>
+    </where>
+      ORDER BY t.id DESC
+  </select>
+
+</mapper>

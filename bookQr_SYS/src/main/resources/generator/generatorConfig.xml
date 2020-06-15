@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration
+        PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+
+<generatorConfiguration>
+    <properties resource="generator/config.properties"/>
+
+
+    <context id="Mysql" targetRuntime="MyBatis3Simple" defaultModelType="flat">
+        <property name="beginningDelimiter" value="`"/>
+        <property name="endingDelimiter" value="`"/>
+
+        <plugin type="${mapper.plugin}">
+            <property name="mappers" value="${mapper.Mapper}"/>
+        </plugin>
+
+        <jdbcConnection driverClass="${jdbc.driverClass}"
+                        connectionURL="${jdbc.url}"
+                        userId="${jdbc.user}"
+                        password="${jdbc.password}">
+        </jdbcConnection>
+
+        <javaModelGenerator targetPackage="${targetModelPackage}" targetProject="${targetJavaProject}"/>
+
+        <sqlMapGenerator targetPackage="${targetXMLPackage}" targetProject="${targetResourcesProject}"/>
+
+        <javaClientGenerator targetPackage="${targetMapperPackage}" targetProject="${targetJavaProject}"
+                             type="XMLMAPPER"/>
+
+        <!--<table tableName="t_auditor_mail" domainObjectName="AuditorMail"/>-->
+        <!--<table tableName="t_book" domainObjectName="Book"/>-->
+        <!--<table tableName="t_client" domainObjectName="Client"/>-->
+        <!--<table tableName="t_client_attribute" domainObjectName="ClientAttr"/>-->
+        <!--<table tableName="t_client_plan" domainObjectName="ClientPlan"/>-->
+        <!--<table tableName="t_client_textbook" domainObjectName="ClientBook"/>-->
+        <!--<table tableName="t_file_res" domainObjectName="FileRes"/>-->
+        <!--<table tableName="t_mail" domainObjectName="Mail"/>-->
+        <!--<table tableName="t_mail_book_count" domainObjectName="MailBookCount"/>-->
+        <!--<table tableName="t_news" domainObjectName="News"/>-->
+        <!--<table tableName="t_organization" domainObjectName="Org"/>-->
+        <!--<table tableName="t_permission" domainObjectName="Perm"/>-->
+        <!--<table tableName="t_press" domainObjectName="Press"/>-->
+        <!--<table tableName="t_qr" domainObjectName="BookQr"/>-->
+        <!--<table tableName="t_operation" domainObjectName="Operation"/>-->
+        <!--<table tableName="t_resources" domainObjectName="Res"/>-->
+        <!--<table tableName="t_use_org" domainObjectName="UseOrg"/>-->
+        <!--<table tableName="t_user" domainObjectName="User"/>-->
+
+        <!-- 权限二维码记录表 170731 -->
+        <!--<table tableName="t_qr_auth" domainObjectName="BookQrAuth"/>-->
+        <!-- 社里用户中心记录表 170731 -->
+        <!--<table tableName="t_user_center" domainObjectName="UserCenter"/>-->
+
+        <table tableName="t_sys_config" domainObjectName="SysConfig"/>
+    </context>
+</generatorConfiguration>

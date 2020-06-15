@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yxtech.sys.dao.ClientAttrMapper">
+  <resultMap id="BaseResultMap" type="com.yxtech.sys.domain.ClientAttr">
+    <!--
+      WARNING - @mbggenerated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="client_Id" jdbcType="INTEGER" property="clientId" />
+    <result column="email" jdbcType="VARCHAR" property="email" />
+    <result column="password" jdbcType="VARCHAR" property="password" />
+    <result column="book_Id" jdbcType="INTEGER" property="bookId" />
+    <result column="qr_Id" jdbcType="INTEGER" property="qrId" />
+    <result column="target" jdbcType="VARCHAR" property="target" />
+    <result column="status" jdbcType="INTEGER" property="status" />
+    <result column="reason" jdbcType="VARCHAR" property="reason" />
+    <result column="type" jdbcType="INTEGER" property="type" />
+    <result column="create_Time" jdbcType="TIMESTAMP" property="createTime" />
+  </resultMap>
+
+  <resultMap id="ClientAttrBookVoMap" type="com.yxtech.sys.vo.clientAttr.ClientAttrBookVo">
+    <result column="id" jdbcType="INTEGER" property="id" />
+    <result column="bookId" jdbcType="INTEGER" property="bookId" />
+    <result column="bookName" jdbcType="VARCHAR" property="bookName" />
+    <result column="email" jdbcType="VARCHAR" property="email" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="phone" jdbcType="VARCHAR" property="phone" />
+    <result column="age" jdbcType="INTEGER" property="age" />
+    <result column="seat" jdbcType="VARCHAR" property="seat" />
+    <result column="school" jdbcType="VARCHAR" property="school" />
+    <result column="depart" jdbcType="VARCHAR" property="depart" />
+    <result column="reason" jdbcType="VARCHAR" property="reason" />
+    <result column="sex" jdbcType="INTEGER" property="sex" />
+    <result column="status" jdbcType="INTEGER" property="status" />
+    <result column="create_Time" jdbcType="TIMESTAMP" property="createTime" />
+  </resultMap>
+    <resultMap id="ClientBookVoMap" type="com.yxtech.sys.vo.ClientBookVo">
+        <result column="id" jdbcType="INTEGER" property="id" />
+        <result column="bookId" jdbcType="INTEGER" property="bookId" />
+        <result column="bookName" jdbcType="VARCHAR" property="bookName" />
+        <result column="email" jdbcType="VARCHAR" property="email" />
+        <result column="name" jdbcType="VARCHAR" property="name" />
+        <result column="phone" jdbcType="VARCHAR" property="phone" />
+        <result column="age" jdbcType="INTEGER" property="age" />
+        <result column="seat" jdbcType="VARCHAR" property="seat" />
+        <result column="school" jdbcType="VARCHAR" property="school" />
+        <result column="depart" jdbcType="VARCHAR" property="depart" />
+        <result column="reason" jdbcType="VARCHAR" property="reason" />
+        <result column="sex" jdbcType="INTEGER" property="sex" />
+        <result column="status" jdbcType="INTEGER" property="status" />
+        <result column="create_Time" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="code" jdbcType="VARCHAR" property="code"/>
+        <result column="category" jdbcType="VARCHAR" property="category"/>
+        <result column="press" jdbcType="VARCHAR" property="press"/>
+        <result column="editor" jdbcType="VARCHAR" property="editor"/>
+        <result column="author" jdbcType="VARCHAR" property="author"/>
+        <result column="quoteId" jdbcType="INTEGER" property="quoteId" />
+    </resultMap>
+
+  <select id="getCountExamineList" resultType="java.lang.Integer">
+    SELECT
+      Count(*)
+    FROM
+    (
+      SELECT
+        tca.id,
+        tb.id as bookId,
+        tb.`name`,
+        tca.email,
+        tca.client_Id,
+        tca.`status`,
+        tca.create_Time
+      FROM
+        t_client_attribute tca
+      LEFT JOIN t_book tb ON tca.book_Id = tb.id
+      WHERE
+        tb.`name` IS NOT NULL
+        <if test="bookId != 0">
+          AND tb.id = #{bookId}
+        </if>
+        <if test="role != 2 and role != 0">
+          <if test="userId != 0">
+            AND tb.auditor_Id = #{userId}
+          </if>
+        </if>
+    ) t
+    LEFT JOIN t_client c ON t.client_Id = c.id
+    WHERE c.open_Id !='undefined' and c.open_Id is not null
+      <if test="status != 0">
+          AND t.`status` = #{status}
+      </if>
+  </select>
+
+  <select id="getExamineList" resultMap="ClientAttrBookVoMap">
+    SELECT
+        t.id ,
+        t.bookId,
+        t.`name` bookName,
+        t.qrId ,
+        t.qrName ,
+        t.email ,
+        c.`name` ,
+        c.phone ,
+        c.age ,
+        c.school ,
+        c.depart ,
+        c.seat ,
+        c.sex ,
+        c.photo ,
+        t.`status` ,
+        t.reason,
+        t.create_Time
+    FROM
+        (
+            SELECT
+                tca.id,
+                tb.id as bookId,
+                qr.id as qrId,
+                qr.name as qrName,
+                tb.`name`,
+                tca.email,
+                tca.reason,
+                tca.client_Id,
+                tca.`status`,
+                tca.create_Time
+            FROM
+                t_client_attribute tca
+            LEFT JOIN t_book tb ON tca.book_Id = tb.id
+            LEFT JOIN t_qr qr ON tca.qr_Id = qr.id
+            WHERE
+                tb.`name` IS NOT NULL
+                <if test="bookId != 0">
+                  AND tb.id = #{bookId}
+                </if>
+                <if test="role != 2 and role != 0">
+                  <if test="userId != 0">
+                    AND tb.auditor_Id = #{userId}
+                  </if>
+                </if>
+        ) t
+    LEFT JOIN t_client c ON t.client_Id = c.id
+    WHERE c.open_Id !='undefined' and c.open_Id is not null
+    <if test="status != 0">
+      AND t.`status` = #{status}
+    </if>
+    ORDER BY t.id DESC
+    LIMIT #{pageNo}, #{pageSize};
+  </select>
+
+    <!-- 审核信息导出 -->
+    <select id="exportList" resultMap="ClientBookVoMap">
+SELECT
+    t.bookId,
+	t.`code`,
+	t.`name` bookName,
+	t.category,
+	t.quoteId,
+	t.press,
+	t.editor,
+	t.author,
+	t.qrName,
+	t.email,
+	c.`name`,
+	c.phone,
+	c.age,
+	c.seat,
+	c.school,
+	c.depart,
+    t.`status`,
+	t.create_Time
+FROM
+	(
+		SELECT
+			tca.id,
+			tb.id AS bookId,
+			tb.`code`,
+			tb.category,
+            IF(tb.quoteId !=0,'是','否') quoteId,
+			tb.press,
+			tb.editor,
+			tb.author,
+			qr.id AS qrId,
+			qr. NAME AS qrName,
+			tb.`name`,
+			tca.email,
+			tca.reason,
+			tca.client_Id,
+			tca.`status`,
+			tca.create_Time
+		FROM
+			t_client_attribute tca
+		LEFT JOIN t_book tb ON tca.book_Id = tb.id
+		LEFT JOIN t_qr qr ON tca.qr_Id = qr.id
+        WHERE
+            tb.`name` IS NOT NULL
+            <if test="bookId != 0">
+                AND tb.id = #{bookId}
+            </if>
+            <if test="role != 2 and role != 0">
+                <if test="userId != 0">
+                    AND tb.auditor_Id = #{userId}
+                </if>
+            </if>
+	) t
+    LEFT JOIN t_client c ON t.client_Id = c.id
+        WHERE c.open_Id !='undefined' and c.open_Id is not null
+        <if test="status != 0">
+            AND status = #{status}
+        </if>
+        ORDER BY t.id DESC
+    </select>
+
+
+  <select id="getExamineVoList" parameterType="int" resultType="com.yxtech.sys.vo.clientAttr.ClientAttrExamineVo" >
+    SELECT
+        tca.book_Id bookId,
+        tb.`name` bookName,
+        tca.create_Time createTime,
+        tca.email,
+        tca.id,
+        tc.`name` `name`,
+        tca.qr_Id qrId,
+        tq. NAME qrName,
+        tca.`status`
+    FROM
+        t_client_attribute tca
+    LEFT JOIN t_qr tq ON tca.qr_Id = tq.id
+    LEFT JOIN t_book tb ON tca.book_Id = tb.id
+    LEFT JOIN t_client tc ON tca.client_Id = tc.id
+    WHERE
+        tca.`status` = 1
+    AND
+        tb.id = #{bookId}
+  </select>
+
+
+  <select id="exportClient" resultType="com.yxtech.sys.vo.client.ClientExportVO" >
+    select tca.email, tc.`name` clientName, tc.phone, tc.age, tc.school, tc.depart, tc.seat, tc.teach as lesson, tb.`code`, tb.`name` bookName, tb.author, tb.editor, tb.press, tb.category, tb.isbn, tq.`name` qrName, tca.create_Time createTime from t_client_attribute tca
+    left join t_client tc on tca.client_Id = tc.id
+    left join t_book tb on tca.book_Id = tb.id
+    left join t_qr tq on tca.qr_Id = tq.id
+    <where>
+        tca.type = 1
+        <if test="pressId != null and pressId != 0">
+            and tb.press_Id = #{pressId}
+        </if>
+        <if test="bookId != null and bookId != 0">
+            and tca.book_Id = #{bookId}
+        </if>
+        <if test="status != null and status != 0">
+            and tca.`status` = #{status}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            and (tca.email like CONCAT('%',#{keyword},'%') or tc.`name` like CONCAT('%',#{keyword},'%'))
+        </if>
+    </where>
+    order by tca.client_Id desc
+  </select>
+
+
+
+</mapper>

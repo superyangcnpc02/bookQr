@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yxtech.sys.dao.AuditorMailMapper">
+  <resultMap id="BaseResultMap" type="com.yxtech.sys.domain.AuditorMail">
+    <!--
+      WARNING - @mbggenerated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="book_Id" jdbcType="INTEGER" property="bookId" />
+    <result column="auditor_Email" jdbcType="VARCHAR" property="auditorEmail" />
+    <result column="tip" jdbcType="LONGVARCHAR" property="tip" />
+  </resultMap>
+</mapper>

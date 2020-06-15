@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yxtech.sys.dao.ResMapper">
+  <resultMap id="BaseResultMap" type="com.yxtech.sys.domain.Res">
+    <!--
+      WARNING - @mbggenerated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="file_Type" jdbcType="INTEGER" property="fileType" />
+    <result column="sorting" jdbcType="INTEGER" property="sorting" />
+    <result column="onwer" jdbcType="INTEGER" property="onwer" />
+    <result column="secrecy" jdbcType="INTEGER" property="secrecy" />
+    <result column="file_Uuid" jdbcType="VARCHAR" property="fileUuid" />
+    <result column="qr_Id" jdbcType="INTEGER" property="qrId" />
+    <result column="is_send" jdbcType="INTEGER" property="isSend" />
+    <result column="num" jdbcType="INTEGER" property="num" />
+    <result column="indexs" jdbcType="INTEGER" property="indexs" />
+    <result column="text" jdbcType="LONGVARCHAR" property="text" />
+    <result column="down_Load" jdbcType="BOOLEAN" property="downLoad" />
+    <result column="create_Time" jdbcType="TIMESTAMP" property="createTime" />
+  </resultMap>
+
+  <select id="getSecrecyByqrId" parameterType="int" resultType="Integer">
+    SELECT secrecy  FROM t_resources  WHERE qr_Id=#{qrId}
+  </select>
+
+  <select id="exportDownRank" parameterType="java.util.Map" resultType="com.yxtech.sys.vo.count.ResCountVo">
+      select  tb.id bookId,
+      tb.`name` bookName,
+      tq.id qrId,
+      tq.`name` qrName,
+      tr.id resourceId,
+      tfr.`name` resourceName,
+      tb.`code`,
+      tb.editor,
+      tb.onwer editorId,
+      tb.press_Id pressId,
+      tb.press pressName,
+      tt.num1 num
+      FROM(
+      select SUM(t.num) num1,t.book_Id,t.qr_Id,t.res_Id,t.press_Id,t.create_Time from  t_qr_down_rank t group by t.res_Id 	order by num1 desc)
+      tt
+      LEFT JOIN t_book tb ON tt.book_Id = tb.id
+      LEFT JOIN t_qr tq ON tt.qr_Id = tq.id
+      LEFT JOIN t_resources tr ON tt.res_Id = tr.id
+      LEFT JOIN t_file_res tfr ON tr.file_Uuid = tfr.uuid
+      <where>
+          <if test="keyword != null and keyword != ''" >
+              AND tb.name like CONCAT('%',#{keyword},'%')
+          </if>
+          <if test="formal != null">
+              AND tb.formal = #{formal}
+          </if>
+          <if test="bookId != 0">
+              AND tt.book_Id = #{bookId}
+          </if>
+          <if test="qrcodeId != 0">
+              AND tt.qr_Id = #{qrcodeId}
+          </if>
+          <if test="pressId != 0">
+              AND tt.press_Id = #{pressId}
+          </if>
+          <if test="createBegin != null and createBegin != ''">
+              AND Date(tt.create_Time) &gt;= Date(#{createBegin})
+          </if>
+          <if test="createEnd != null and createEnd != ''">
+              AND Date(tt.create_Time) &lt;= Date(#{createEnd})
+          </if>
+      </where>
+      GROUP BY tt.res_Id
+      ORDER BY tt.num1 DESC
+  </select>
+
+
+  <select id="downLoadRankCount" parameterType="java.util.Map" resultType="Long">
+      select count(distinct t.res_Id) from t_qr_down_rank t
+      LEFT JOIN t_book tb ON t.book_Id = tb.id
+          <where>
+                  <if test="keyword != null and keyword != ''" >
+                      AND tb.name like CONCAT('%',#{keyword},'%')
+                  </if>
+
+                  <if test="formal != null">
+                      AND tb.formal = #{formal}
+                  </if>
+                  <if test="bookId != null and bookId != 0">
+                      AND t.book_Id = #{bookId}
+                  </if>
+                  <if test="qrcodeId != null and qrcodeId != 0">
+                      AND t.qr_Id = #{qrcodeId}
+                  </if>
+                  <if test="pressId != null and pressId != 0">
+                      AND t.press_Id = #{pressId}
+                  </if>
+                  <if test="createBegin != null and createBegin != ''">
+                      AND Date(t.create_Time) &gt;= Date(#{createBegin})
+                  </if>
+                  <if test="createEnd != null and createEnd != ''">
+                      AND Date(t.create_Time) &lt;= Date(#{createEnd})
+                  </if>
+              </where>
+  </select>
+
+  <select id="downLoadRank" parameterType="java.util.Map" resultType="com.yxtech.sys.vo.count.ResCountVo">
+      select  tb.id bookId,
+      tb.`name` bookName,
+      tq.id qrId,
+      tq.`name` qrName,
+      tr.id resourceId,
+      tfr.`name` resourceName,
+      tb.`code`,
+      tb.editor,
+      tb.onwer editorId,
+      tb.press_Id pressId,
+      tb.press pressName,
+      tt.num1 num
+      FROM(
+      select SUM(t.num) num1,t.book_Id,t.qr_Id,t.res_Id,t.press_Id,t.create_Time from  t_qr_down_rank t group by t.res_Id order by num1 desc)
+      tt
+      LEFT JOIN t_book tb ON tt.book_Id = tb.id
+      LEFT JOIN t_qr tq ON tt.qr_Id = tq.id
+      LEFT JOIN t_resources tr ON tt.res_Id = tr.id
+      LEFT JOIN t_file_res tfr ON tr.file_Uuid = tfr.uuid
+      <where>
+          <if test="keyword != null and keyword != ''" >
+              AND tb.name like CONCAT('%',#{keyword},'%')
+          </if>
+          <if test="formal != null">
+              AND tb.formal = #{formal}
+          </if>
+          <if test="bookId != 0">
+              AND tt.book_Id = #{bookId}
+          </if>
+          <if test="qrcodeId != 0">
+              AND tt.qr_Id = #{qrcodeId}
+          </if>
+          <if test="pressId != 0">
+              AND tt.press_Id = #{pressId}
+          </if>
+          <if test="createBegin != null and createBegin != ''">
+              AND Date(tt.create_Time) &gt;= Date(#{createBegin})
+          </if>
+          <if test="createEnd != null and createEnd != ''">
+              AND Date(tt.create_Time) &lt;= Date(#{createEnd})
+          </if>
+      </where>
+      GROUP BY tt.res_Id
+      ORDER BY num DESC
+      LIMIT #{page}, #{pageSize}
+  </select>
+
+    <select id="getResNumGreaterThanOne"  resultType="Integer">
+        SELECT t.qr_Id from ( SELECT qr_Id,COUNT(*) as num from t_resources GROUP BY qr_Id HAVING num>1) as t where t.qr_Id>0;
+    </select>
+</mapper>

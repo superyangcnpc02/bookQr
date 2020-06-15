@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yxtech.sys.dao.QrExportMapper">
+  <resultMap id="BaseResultMap" type="com.yxtech.sys.domain.QrExport">
+    <!--
+      WARNING - @mbggenerated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="qr_Id" jdbcType="INTEGER" property="qrId" />
+    <result column="num" jdbcType="INTEGER" property="num" />
+    <result column="creator_Id" jdbcType="INTEGER" property="creatorId" />
+    <result column="creator_Account" jdbcType="VARCHAR" property="creatorAccount" />
+    <result column="create_Time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="type" jdbcType="INTEGER" property="type" />
+  </resultMap>
+</mapper>

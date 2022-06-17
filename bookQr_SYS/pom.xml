@@ -18,7 +18,7 @@
         <log4j.version>1.2.17</log4j.version>
 
         <!-- JSON -->
-        <fastjson.version>1.2.62</fastjson.version>
+        <fastjson.version>1.2.83</fastjson.version>
         <!-- AspectJ  aop-->
         <aspectj.version>1.8.7</aspectj.version>
         <!-- 数据库连接池-->

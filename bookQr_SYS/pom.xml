@@ -362,7 +362,7 @@
         <dependency>
             <groupId>com.itextpdf</groupId>
             <artifactId>itextpdf</artifactId>
-            <version>5.2.0</version>
+            <version>5.5.12</version>
         </dependency>
         <!--使用itext生成PDF，这段依赖必须添加。-->
         <dependency>

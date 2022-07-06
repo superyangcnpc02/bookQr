@@ -24,7 +24,7 @@
         <!-- 数据库连接池-->
         <druid.version>1.0.15</druid.version>
         <!--shiro-->
-        <org.apache.shiro-version>1.2.4</org.apache.shiro-version>
+        <org.apache.shiro-version>1.9.1</org.apache.shiro-version>
         <!--跨域-->
         <cors.version>2.4</cors.version>
 
